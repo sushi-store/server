@@ -1,6 +1,9 @@
 from django.db import models
-from sushi.models import Sushi
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from phonenumber_field.modelfields import PhoneNumberField
+from sushi.models import Sushi
+import logging
 
 
 class OrderSushi(models.Model):
@@ -20,8 +23,8 @@ class OrderSushi(models.Model):
     )
     customer_name = models.CharField(max_length=50)
     customer_last_name = models.CharField(max_length=50)
-    email = models.EmailField(blank=True)
-    phone_number = PhoneNumberField(null=False, blank=False, unique=True)
+    email = models.EmailField(null=True, blank=True)
+    phone_number = PhoneNumberField(null=False, blank=False)
     delivery_type = models.CharField(
         max_length=1, default='D', choices=DELIVERIES_TYPES)
     payment_method = models.CharField(
@@ -36,11 +39,12 @@ class OrderSushi(models.Model):
     def __str__(self) -> str:
         return f"Order #{self.id}"
 
-    def save(self, *args, **kwargs):
-        # print(self.orderitem_set.all())
-        for order_item in self.orderitem_set.all():
-            self.price = order_item.sushi.price * order_item.amount
-        super(OrderSushi, self).save(*args, **kwargs)
+
+@receiver(pre_save, sender=OrderSushi)
+def update_price(sender, instance, **kwargs):
+    instance.price = 0
+    for order_item in instance.orderitem_set.all():
+        instance.price += order_item.sushi.price * order_item.amount
 
 
 class OrderItem(models.Model):

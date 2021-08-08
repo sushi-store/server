@@ -59,8 +59,8 @@ class OrderModelForm(forms.ModelForm):
 class OrderAdmin(admin.ModelAdmin):
     form = OrderModelForm
     list_filter = ('status',)
-    list_display = ('customer_last_name', 'customer_name',
-                    'phone_number', 'price', 'status')
+    list_display = ('phone_number', 'customer_last_name',
+                    'customer_name', 'price', 'status', 'date_of_order')
     inlines = (AddressInline, OrdersInline, )
     actions = [set_in_progress, set_done, set_cancelled]
 
