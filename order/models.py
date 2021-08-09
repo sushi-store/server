@@ -1,11 +1,9 @@
 from django.db import models
-from django.db.models.signals import pre_save
-from django.dispatch import receiver
 from phonenumber_field.modelfields import PhoneNumberField
 from sushi.models import Sushi
 
 
-class OrderSushi(models.Model):
+class Order(models.Model):
     ORDER_STATUS = (
         ('P', 'Pending'),
         ('I', 'In Process'),
@@ -29,8 +27,14 @@ class OrderSushi(models.Model):
     payment_method = models.CharField(
         max_length=1, default='С', choices=PAYMENT_METHODS)
     status = models.CharField(max_length=1, default='P', choices=ORDER_STATUS)
-    price = models.PositiveIntegerField(default=0)
     date_of_order = models.DateTimeField(auto_now=True)
+
+    @property
+    def price(self):
+        full_price = 0
+        for order_item in self.orderitem_set.all():
+            full_price += order_item.sushi.price * order_item.amount
+        return full_price
 
     class Meta:
         verbose_name_plural = "Orders"
@@ -39,16 +43,9 @@ class OrderSushi(models.Model):
         return f"Order #{self.id}"
 
 
-@receiver(pre_save, sender=OrderSushi)
-def update_price(sender, instance, **kwargs):
-    instance.price = 0
-    for order_item in instance.orderitem_set.all():
-        instance.price += order_item.sushi.price * order_item.amount
-
-
 class OrderItem(models.Model):
     sushi = models.ForeignKey(Sushi, on_delete=models.CASCADE)
-    order = models.ForeignKey(OrderSushi, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
     amount = models.PositiveSmallIntegerField(default=1)
 
     class Meta:

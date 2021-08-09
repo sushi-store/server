@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django import forms
-from .models import OrderSushi, OrderItem
+from .models import Order, OrderItem
 from user.models import Address
 
 
@@ -24,15 +24,6 @@ class AddressInline(admin.StackedInline):
     fields = ('street_name', 'street_number', 'entrance_number',
               'housing_number', 'apartment_number', 'floor_number')
 
-    def get_max_num(self, request, obj=None, **kwargs):
-        return 1
-
-    def get_min_num(self, request, obj=None, **kwargs):
-        return 1
-
-    def get_extra(self, request, obj=None, **kwargs):
-        return 0
-
 
 class OrdersInline(admin.StackedInline):
     model = OrderItem
@@ -51,7 +42,7 @@ class OrdersInline(admin.StackedInline):
 
 class OrderModelForm(forms.ModelForm):
     class Meta:
-        model = OrderSushi
+        model = Order
         fields = ("customer_name", "customer_last_name", "email",
                   "phone_number", "delivery_type", "payment_method")
 
@@ -65,4 +56,4 @@ class OrderAdmin(admin.ModelAdmin):
     actions = [set_in_progress, set_done, set_cancelled]
 
 
-admin.site.register(OrderSushi, OrderAdmin)
+admin.site.register(Order, OrderAdmin)

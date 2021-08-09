@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db.models.deletion import CASCADE
 from phonenumber_field.modelfields import PhoneNumberField
-from order.models import OrderSushi
+from order.models import Order
 
 
 class AccountManager(BaseUserManager):
@@ -74,8 +74,11 @@ class Address(models.Model):
     floor_number = models.CharField(max_length=10, blank=True, null=True)
     user = models.ForeignKey(
         CustomerUser, on_delete=CASCADE, related_name='user', null=True)
-    order = models.ForeignKey(
-        OrderSushi, on_delete=models.CASCADE, related_name='order_address', null=True)
+    order = models.OneToOneField(
+        Order,
+        on_delete=models.CASCADE,
+        related_name='order_address', null=True
+    )
 
     def __str__(self) -> str:
         return f'{self.street_name}, {self.street_number}'
