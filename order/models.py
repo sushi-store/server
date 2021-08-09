@@ -32,7 +32,7 @@ class Order(models.Model):
     @property
     def price(self):
         full_price = 0
-        for order_item in self.orderitem_set.all():
+        for order_item in self.order.all():
             full_price += order_item.sushi.price * order_item.amount
         return full_price
 
@@ -44,8 +44,10 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
-    sushi = models.ForeignKey(Sushi, on_delete=models.CASCADE)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    sushi = models.ForeignKey(
+        Sushi, on_delete=models.CASCADE, related_name='sushi')
+    order = models.ForeignKey(
+        Order, on_delete=models.CASCADE, related_name='order')
     amount = models.PositiveSmallIntegerField(default=1)
 
     class Meta:
