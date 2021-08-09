@@ -81,7 +81,8 @@ INSTALLED_APPS = [
     'sushi_api',
     'user',
     'user_api',
-    'order'
+    'order',
+    'order_api',
 ]
 
 MIDDLEWARE = [

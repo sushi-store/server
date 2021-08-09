@@ -3,7 +3,6 @@ from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from phonenumber_field.modelfields import PhoneNumberField
 from sushi.models import Sushi
-import logging
 
 
 class OrderSushi(models.Model):
