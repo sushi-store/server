@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import NotAcceptable, ParseError
 from user.models import CustomerUser, Address
 from phonenumber_field.serializerfields import PhoneNumberField
+import logging
 
 
 class TooMuchAddressesError(Exception):
@@ -10,15 +11,18 @@ class TooMuchAddressesError(Exception):
 
 
 class AddressSerializer(serializers.ModelSerializer):
-    streetName = serializers.CharField(source='street_name')
-    streetNumber = serializers.CharField(source='street_number')
+    streetName = serializers.CharField(
+        source='street_name', allow_blank=True, allow_null=True, default='')
+    streetNumber = serializers.CharField(
+        source='street_number', allow_blank=True, allow_null=True, default='')
     entranceNumber = serializers.CharField(
-        source='entrance_number', required=False)
+        source='entrance_number', allow_blank=True, allow_null=True, default='')
     housingNumber = serializers.CharField(
-        source='housing_number', required=False)
+        source='housing_number', allow_blank=True, allow_null=True, default='')
     apartmentNumber = serializers.CharField(
-        source='apartment_number', required=False)
-    floorNumber = serializers.CharField(source='floor_number', required=False)
+        source='apartment_number', allow_blank=True, allow_null=True, default='')
+    floorNumber = serializers.CharField(
+        source='floor_number', allow_blank=True, allow_null=True, default='')
 
     class Meta:
         model = Address
@@ -27,8 +31,7 @@ class AddressSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    lastName = serializers.CharField(source='last_name')
-    firstName = serializers.CharField(source='first_name')
+    name = serializers.CharField()
     addresses = AddressSerializer(many=True, required=False)
     phoneNumber = PhoneNumberField(source='phone_number')
     isEmailConfirmed = serializers.BooleanField(
@@ -37,8 +40,14 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomerUser
-        fields = ['email', 'lastName', 'firstName', 'patronymic',
+        fields = ['email', 'name',
                   'phoneNumber', 'isEmailConfirmed', 'addresses']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['addresses'] = AddressSerializer(
+            instance=Address.objects.filter(user=instance), many=True).data
+        return data
 
     def update(self, instance, validated_data):
         try:
@@ -58,21 +67,21 @@ class UserSerializer(serializers.ModelSerializer):
             raise NotAcceptable(error)
 
     def validate_phoneNumber(self, value):
-        if CustomerUser.objects.filter(phone_number__iexact=value).exists():
+        users = CustomerUser.objects.exclude(pk=self.instance.pk)
+        if users.filter(phone_number__iexact=value).exists():
             raise serializers.ValidationError("Phone number already exists.")
         return value
 
 
 class RegisterUserSerializer(serializers.ModelSerializer):
-    lastName = serializers.CharField(source='last_name')
-    firstName = serializers.CharField(source='first_name')
+    name = serializers.CharField()
     addresses = AddressSerializer(many=True, required=False)
     phoneNumber = PhoneNumberField(source='phone_number')
     email = serializers.EmailField()
 
     class Meta:
         model = CustomerUser
-        fields = ['email', 'lastName', 'firstName', 'patronymic',
+        fields = ['email', 'name',
                   'phoneNumber', 'password', 'addresses']
         extra_kwargs = {'password': {'write_only': True}}
 

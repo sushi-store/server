@@ -18,8 +18,7 @@ class Order(models.Model):
         ('C', 'Cash'),
         ('D', 'Card'),
     )
-    customer_name = models.CharField(max_length=50)
-    customer_last_name = models.CharField(max_length=50)
+    customer_name = models.CharField(max_length=100)
     email = models.EmailField(null=True, blank=True)
     phone_number = PhoneNumberField(null=False, blank=False)
     delivery_type = models.CharField(

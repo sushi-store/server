@@ -43,14 +43,14 @@ class OrdersInline(admin.StackedInline):
 class OrderModelForm(forms.ModelForm):
     class Meta:
         model = Order
-        fields = ("customer_name", "customer_last_name", "email",
+        fields = ("customer_name", "email",
                   "phone_number", "delivery_type", "payment_method")
 
 
 class OrderAdmin(admin.ModelAdmin):
     form = OrderModelForm
     list_filter = ('status',)
-    list_display = ('phone_number', 'customer_last_name',
+    list_display = ('phone_number',
                     'customer_name', 'price', 'status', 'date_of_order')
     inlines = (AddressInline, OrdersInline, )
     actions = [set_in_progress, set_done, set_cancelled]

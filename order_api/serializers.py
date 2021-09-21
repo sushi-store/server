@@ -7,6 +7,7 @@ from sushi.models import Sushi
 from rest_framework.exceptions import NotAcceptable
 from phonenumber_field.serializerfields import PhoneNumberField
 import logging
+from django.forms.models import model_to_dict
 
 
 class ChoiceField(serializers.ChoiceField):
@@ -27,16 +28,26 @@ class ChoiceField(serializers.ChoiceField):
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
-    sushi = SushiSerializer()
+    slug = serializers.CharField()
 
     class Meta:
         model = OrderItem
-        fields = ['sushi', 'amount']
+        fields = ['slug', 'amount']
+
+    def create(self, validated_data):
+        instance = self.Meta.model(sushi=Sushi.objects.get(
+            slug=validated_data.get('slug')), **validated_data)
+        instance.save()
+        return instance
+
+    def to_representation(self, instance):
+        data = SushiSerializer(instance=instance.sushi).data
+        data['amount'] = instance.amount
+        return data
 
 
 class OrderSerializer(serializers.ModelSerializer):
     customerName = serializers.CharField(source='customer_name')
-    customerLastName = serializers.CharField(source='customer_last_name')
     phoneNumber = PhoneNumberField(source='phone_number')
     dateOfOrder = serializers.DateTimeField(
         source='date_of_order', read_only=True)
@@ -47,13 +58,13 @@ class OrderSerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField(
         'get_status', read_only=True)
     address = AddressSerializer(source='order_address')
-    orderItems = OrderItemSerializer(source='order', many=True)
+    order = OrderItemSerializer(many=True)
     price = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Order
-        fields = ['id', 'customerName', 'customerLastName',
-                  'email', 'phoneNumber', 'deliveryType', 'paymentMethod', 'status', 'address', 'orderItems', 'price', 'dateOfOrder']
+        fields = ['id', 'customerName',
+                  'email', 'phoneNumber', 'deliveryType', 'paymentMethod', 'status', 'address', 'order', 'price', 'dateOfOrder']
 
     def create(self, validated_data):
         logger = logging.getLogger('logger')
@@ -64,14 +75,17 @@ class OrderSerializer(serializers.ModelSerializer):
             raise NotAcceptable(error)
         try:
             address = validated_data.pop('order_address')
+            logger.info(address.values())
+            if validated_data.get('delivery_type') is 'D' and any(value for value in address.values()):
+                raise NotAcceptable('Deliverty type should have address.')
         except KeyError as error:
             raise NotAcceptable(error)
         instance = self.Meta.model(**validated_data)
         instance.save()
         for order_item in order_items:
-            sushi = order_item.pop('sushi')
+            logger.info(order_item)
             OrderItem.objects.create(order=instance, sushi=Sushi.objects.get(
-                slug=sushi['slug']), **order_item)
+                slug=order_item['slug']), amount=order_item['amount'])
         Address.objects.create(order=instance, **address)
         return instance
 

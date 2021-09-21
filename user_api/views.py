@@ -11,6 +11,7 @@ from cryptography.fernet import Fernet
 from django.conf import settings
 import jwt
 import datetime
+import logging
 
 
 def int_to_bytes(x: int) -> bytes:
@@ -24,7 +25,8 @@ def int_from_bytes(xbytes: bytes) -> int:
 def send_confirmation_email(request, user):
     cipher_suite = Fernet(settings.FERNET_KEY_EMAIL)
     encoded_user_id = cipher_suite.encrypt(int_to_bytes(user.pk))
-    token = jwt.encode({"user_id": encoded_user_id.decode("utf-8")}, settings.SECRET_KEY, algorithm="HS256")
+    token = jwt.encode({"user_id": encoded_user_id.decode(
+        "utf-8")}, settings.SECRET_KEY, algorithm="HS256")
     current_site = get_current_site(request)
     mail_subject = 'Activate your sushi shop account.'
     message = f'http://{ current_site.domain }/api/user/activate/{ token }'
@@ -32,7 +34,7 @@ def send_confirmation_email(request, user):
         mail_subject, message, to=[user.email]
     )
     email.send()
-    
+
 
 class UserManageView(APIView):
     permission_classes = [IsAuthenticated]
@@ -43,7 +45,8 @@ class UserManageView(APIView):
         return Response(serializer.data)
 
     def put(self, request):
-        serializer = UserSerializer(request.user, data=request.data, partial=True)
+        serializer = UserSerializer(
+            request.user, data=request.data, partial=True)
 
         if serializer.is_valid():
             serializer.save()
@@ -59,7 +62,10 @@ class UserCreateView(APIView):
         if reg_serializer.is_valid():
             user = reg_serializer.save()
             if user:
-                send_confirmation_email(request, user)
+                try:
+                    send_confirmation_email(request, user)
+                except Exception as error:
+                    user.delete()
                 return Response(status=status.HTTP_201_CREATED)
         return Response(reg_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -70,8 +76,10 @@ class ActivationView(APIView):
     def get(self, request, token):
         cipher_suite = Fernet(settings.FERNET_KEY_EMAIL)
         try:
-            decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            user = CustomerUser.objects.get(pk=int_from_bytes(cipher_suite.decrypt(str.encode(decoded_token['user_id']))))
+            decoded_token = jwt.decode(
+                token, settings.SECRET_KEY, algorithms=["HS256"])
+            user = CustomerUser.objects.get(pk=int_from_bytes(
+                cipher_suite.decrypt(str.encode(decoded_token['user_id']))))
         except:
             user = None
         if user is not None:
@@ -91,9 +99,12 @@ class ResetPasswordView(APIView):
     def get(self, request, token):
         cipher_suite = Fernet(settings.FERNET_KEY_PASSWORD)
         try:
-            decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            expire_date = datetime.datetime.fromtimestamp(decoded_token['expire_date'])
-            user = CustomerUser.objects.get(pk=int_from_bytes(cipher_suite.decrypt(str.encode(decoded_token['user_id']))))
+            decoded_token = jwt.decode(
+                token, settings.SECRET_KEY, algorithms=["HS256"])
+            expire_date = datetime.datetime.fromtimestamp(
+                decoded_token['expire_date'])
+            user = CustomerUser.objects.get(pk=int_from_bytes(
+                cipher_suite.decrypt(str.encode(decoded_token['user_id']))))
         except:
             user = None
         if user and expire_date > datetime.datetime.now() and user.is_email_confirmed:
@@ -102,14 +113,16 @@ class ResetPasswordView(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request):
+        logger = logging.getLogger('logger')
         cipher_suite = Fernet(settings.FERNET_KEY_PASSWORD)
         try:
-            email = request.POST.get('email')
+            logger.info(request.data)
+            email = request.data.get('email')
             user = CustomerUser.objects.get(email=email)
             encoded_user_id = cipher_suite.encrypt(int_to_bytes(user.pk))
-            token = jwt.encode({"user_id": encoded_user_id.decode("utf-8"), 
-                                "expire_date": (datetime.datetime.now() + datetime.timedelta(hours=4)).timestamp()}, 
-                                settings.SECRET_KEY, algorithm="HS256")
+            token = jwt.encode({"user_id": encoded_user_id.decode("utf-8"),
+                                "expire_date": (datetime.datetime.now() + datetime.timedelta(hours=4)).timestamp()},
+                               settings.SECRET_KEY, algorithm="HS256")
             current_site = get_current_site(request)
             mail_subject = 'Password reset.'
             message = f'http://{ current_site.domain }/api/user/reset/password/{ token }'
@@ -117,18 +130,22 @@ class ResetPasswordView(APIView):
                 mail_subject, message, to=[user.email]
             )
             email.send()
-        except:
+        except Exception as e:
+            logger.info(e)
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        
+
         return Response(status=status.HTTP_200_OK)
 
     def put(self, request, token):
         cipher_suite = Fernet(settings.FERNET_KEY_PASSWORD)
         try:
             password = request.data.get('password')
-            decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            expire_date = datetime.datetime.fromtimestamp(decoded_token['expire_date'])
-            user = CustomerUser.objects.get(pk=int_from_bytes(cipher_suite.decrypt(str.encode(decoded_token['user_id']))))
+            decoded_token = jwt.decode(
+                token, settings.SECRET_KEY, algorithms=["HS256"])
+            expire_date = datetime.datetime.fromtimestamp(
+                decoded_token['expire_date'])
+            user = CustomerUser.objects.get(pk=int_from_bytes(
+                cipher_suite.decrypt(str.encode(decoded_token['user_id']))))
         except:
             user = None
         if user and expire_date > datetime.datetime.now() and user.is_email_confirmed:
