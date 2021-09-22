@@ -61,7 +61,7 @@ class Migration(migrations.Migration):
                     blank=True, max_length=10, null=True)),
                 ('entrance_number', models.CharField(
                     blank=True, max_length=10, null=True)),
-                ('housing_number', models.CharField(
+                ('house_number', models.CharField(
                     blank=True, max_length=10, null=True)),
                 ('apartment_number', models.CharField(
                     blank=True, max_length=10, null=True)),

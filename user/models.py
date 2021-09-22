@@ -66,7 +66,7 @@ class Address(models.Model):
     street_name = models.CharField(max_length=50, blank=True, null=True)
     street_number = models.CharField(max_length=10, blank=True, null=True)
     entrance_number = models.CharField(max_length=10, blank=True, null=True)
-    housing_number = models.CharField(max_length=10, blank=True, null=True)
+    house_number = models.CharField(max_length=10, blank=True, null=True)
     apartment_number = models.CharField(max_length=10, blank=True, null=True)
     floor_number = models.CharField(max_length=10, blank=True, null=True)
     user = models.ForeignKey(

@@ -67,23 +67,19 @@ class OrderSerializer(serializers.ModelSerializer):
                   'email', 'phoneNumber', 'deliveryType', 'paymentMethod', 'status', 'address', 'order', 'price', 'dateOfOrder']
 
     def create(self, validated_data):
-        logger = logging.getLogger('logger')
-        logger.info(validated_data)
         try:
             order_items = validated_data.pop('order')
         except KeyError as error:
             raise NotAcceptable(error)
         try:
             address = validated_data.pop('order_address')
-            logger.info(address.values())
-            if validated_data.get('delivery_type') is 'D' and any(value for value in address.values()):
+            if not (validated_data.get('delivery_type') == 'D' and any(value for value in address.values())):
                 raise NotAcceptable('Deliverty type should have address.')
         except KeyError as error:
             raise NotAcceptable(error)
         instance = self.Meta.model(**validated_data)
         instance.save()
         for order_item in order_items:
-            logger.info(order_item)
             OrderItem.objects.create(order=instance, sushi=Sushi.objects.get(
                 slug=order_item['slug']), amount=order_item['amount'])
         Address.objects.create(order=instance, **address)

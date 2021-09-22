@@ -17,8 +17,8 @@ class AddressSerializer(serializers.ModelSerializer):
         source='street_number', allow_blank=True, allow_null=True, default='')
     entranceNumber = serializers.CharField(
         source='entrance_number', allow_blank=True, allow_null=True, default='')
-    housingNumber = serializers.CharField(
-        source='housing_number', allow_blank=True, allow_null=True, default='')
+    houseNumber = serializers.CharField(
+        source='house_number', allow_blank=True, allow_null=True, default='')
     apartmentNumber = serializers.CharField(
         source='apartment_number', allow_blank=True, allow_null=True, default='')
     floorNumber = serializers.CharField(
@@ -27,7 +27,7 @@ class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
         fields = ['streetName', 'streetNumber', 'entranceNumber',
-                  'housingNumber', 'apartmentNumber', 'floorNumber']
+                  'houseNumber', 'apartmentNumber', 'floorNumber']
 
 
 class UserSerializer(serializers.ModelSerializer):

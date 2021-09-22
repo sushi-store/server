@@ -11,7 +11,6 @@ from cryptography.fernet import Fernet
 from django.conf import settings
 import jwt
 import datetime
-import logging
 
 
 def int_to_bytes(x: int) -> bytes:
@@ -113,10 +112,8 @@ class ResetPasswordView(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request):
-        logger = logging.getLogger('logger')
         cipher_suite = Fernet(settings.FERNET_KEY_PASSWORD)
         try:
-            logger.info(request.data)
             email = request.data.get('email')
             user = CustomerUser.objects.get(email=email)
             encoded_user_id = cipher_suite.encrypt(int_to_bytes(user.pk))
@@ -131,7 +128,6 @@ class ResetPasswordView(APIView):
             )
             email.send()
         except Exception as e:
-            logger.info(e)
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         return Response(status=status.HTTP_200_OK)
