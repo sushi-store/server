@@ -51,9 +51,13 @@ class OrderAdmin(admin.ModelAdmin):
     form = OrderModelForm
     list_filter = ('status',)
     list_display = ('phone_number',
-                    'customer_name', 'price', 'status', 'date_of_order')
+                    'customer_name', 'get_address', 'price', 'status', 'date_of_order')
     inlines = (AddressInline, OrdersInline, )
     actions = [set_in_progress, set_done, set_cancelled]
+
+    @admin.display(description='Order Address')
+    def get_address(self, obj):
+        return Address.objects.get(order=obj)
 
 
 admin.site.register(Order, OrderAdmin)
