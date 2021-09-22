@@ -49,7 +49,7 @@ class OrderSerializer(serializers.ModelSerializer):
     customerName = serializers.CharField(source='customer_name')
     phoneNumber = PhoneNumberField(source='phone_number')
     dateOfOrder = serializers.DateTimeField(
-        source='date_of_order', read_only=True)
+        source='date_of_order', format="%d-%m-%Y %H:%M:%S", read_only=True)
     deliveryType = ChoiceField(
         source='delivery_type', choices=Order.DELIVERIES_TYPES)
     paymentMethod = ChoiceField(
