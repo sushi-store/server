@@ -73,7 +73,7 @@ class OrderSerializer(serializers.ModelSerializer):
             raise NotAcceptable(error)
         try:
             address = validated_data.pop('order_address')
-            if not (validated_data.get('delivery_type') == 'D' and any(value for value in address.values())):
+            if not (validated_data.get('delivery_type') == 'D' and any(value for value in address.values())) and not validated_data.get('delivery_type') == 'P':
                 raise NotAcceptable('Deliverty type should have address.')
         except KeyError as error:
             raise NotAcceptable(error)
