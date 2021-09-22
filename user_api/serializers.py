@@ -13,21 +13,17 @@ class TooMuchAddressesError(Exception):
 class AddressSerializer(serializers.ModelSerializer):
     streetName = serializers.CharField(
         source='street_name', allow_blank=True, allow_null=True, default='')
-    streetNumber = serializers.CharField(
-        source='street_number', allow_blank=True, allow_null=True, default='')
-    entranceNumber = serializers.CharField(
-        source='entrance_number', allow_blank=True, allow_null=True, default='')
     houseNumber = serializers.CharField(
         source='house_number', allow_blank=True, allow_null=True, default='')
+    entranceNumber = serializers.CharField(
+        source='entrance_number', allow_blank=True, allow_null=True, default='')
     apartmentNumber = serializers.CharField(
         source='apartment_number', allow_blank=True, allow_null=True, default='')
-    floorNumber = serializers.CharField(
-        source='floor_number', allow_blank=True, allow_null=True, default='')
 
     class Meta:
         model = Address
-        fields = ['streetName', 'streetNumber', 'entranceNumber',
-                  'houseNumber', 'apartmentNumber', 'floorNumber']
+        fields = ['streetName', 'houseNumber',
+                  'entranceNumber', 'apartmentNumber']
 
 
 class UserSerializer(serializers.ModelSerializer):

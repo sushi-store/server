@@ -62,13 +62,10 @@ class CustomerUser(AbstractBaseUser, PermissionsMixin):
 
 
 class Address(models.Model):
-
-    street_name = models.CharField(max_length=50, blank=True, null=True)
-    street_number = models.CharField(max_length=10, blank=True, null=True)
-    entrance_number = models.CharField(max_length=10, blank=True, null=True)
-    house_number = models.CharField(max_length=10, blank=True, null=True)
-    apartment_number = models.CharField(max_length=10, blank=True, null=True)
-    floor_number = models.CharField(max_length=10, blank=True, null=True)
+    street_name = models.CharField(max_length=50, blank=True, default='')
+    house_number = models.CharField(max_length=10, blank=True, default='')
+    entrance_number = models.CharField(max_length=10, blank=True, default='')
+    apartment_number = models.CharField(max_length=10, blank=True, default='')
     user = models.ForeignKey(
         CustomerUser, on_delete=CASCADE, related_name='user', null=True)
     order = models.OneToOneField(
@@ -78,7 +75,7 @@ class Address(models.Model):
     )
 
     def __str__(self) -> str:
-        return f'{self.street_name}, {self.street_number}' if self.street_name and self.street_number else 'No address'
+        return f'{self.street_name}, {self.house_number}' if self.street_name and self.house_number else 'No address'
 
     class Meta:
         verbose_name_plural = "Addresses"

@@ -7,7 +7,6 @@ from sushi.models import Sushi
 from rest_framework.exceptions import NotAcceptable
 from phonenumber_field.serializerfields import PhoneNumberField
 import logging
-from django.forms.models import model_to_dict
 
 
 class ChoiceField(serializers.ChoiceField):
