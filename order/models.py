@@ -25,6 +25,8 @@ class Order(models.Model):
         max_length=1, default='D', choices=DELIVERIES_TYPES)
     payment_method = models.CharField(
         max_length=1, default='С', choices=PAYMENT_METHODS)
+    user_id = models.PositiveIntegerField(null=True, default=None)
+    uuid = models.CharField(max_length=50, null=True, default=None)
     status = models.CharField(max_length=1, default='P', choices=ORDER_STATUS)
     date_of_order = models.DateTimeField(auto_now=True)
 

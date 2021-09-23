@@ -47,6 +47,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     customerName = serializers.CharField(source='customer_name')
+    userId = serializers.IntegerField(source='user_id', allow_null=True)
     phoneNumber = PhoneNumberField(source='phone_number')
     dateOfOrder = serializers.DateTimeField(
         source='date_of_order', format="%d-%m-%Y %H:%M:%S", read_only=True)
@@ -62,7 +63,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'customerName',
+        fields = ['id', 'userId', 'uuid', 'customerName',
                   'email', 'phoneNumber', 'deliveryType', 'paymentMethod', 'status', 'address', 'order', 'price', 'amount', 'dateOfOrder']
 
     def create(self, validated_data):
