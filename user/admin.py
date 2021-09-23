@@ -7,7 +7,7 @@ from rest_framework_simplejwt.tokens import OutstandingToken
 class AddressInline(admin.StackedInline):
     model = Address
     fields = ('street_name', 'house_number',
-              'entrance_number', 'apartment_number')
+              'entrance_number', 'apartments_number')
 
     def get_max_num(self, request, obj=None, **kwargs):
         return 3

@@ -22,7 +22,7 @@ def set_cancelled(modeladmin, request, queryset):
 class AddressInline(admin.StackedInline):
     model = Address
     fields = ('street_name', 'house_number',
-              'entrance_number', 'apartment_number')
+              'entrance_number', 'apartments_number')
 
 
 class OrdersInline(admin.StackedInline):

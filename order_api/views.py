@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import rest_framework.status as status
-from order.models import Order, OrderItem
+from order.models import Order
 from .serializers import OrderSerializer
 
 

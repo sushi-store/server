@@ -35,6 +35,13 @@ class Order(models.Model):
             full_price += order_item.sushi.price * order_item.amount
         return full_price
 
+    @property
+    def amount(self):
+        total_amount = 0
+        for order_item in self.order.all():
+            total_amount += order_item.amount
+        return total_amount
+
     class Meta:
         verbose_name_plural = "Orders"
 

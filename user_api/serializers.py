@@ -17,13 +17,13 @@ class AddressSerializer(serializers.ModelSerializer):
         source='house_number', allow_blank=True, allow_null=True, default='')
     entranceNumber = serializers.CharField(
         source='entrance_number', allow_blank=True, allow_null=True, default='')
-    apartmentNumber = serializers.CharField(
-        source='apartment_number', allow_blank=True, allow_null=True, default='')
+    apartmentsNumber = serializers.CharField(
+        source='apartments_number', allow_blank=True, allow_null=True, default='')
 
     class Meta:
         model = Address
         fields = ['streetName', 'houseNumber',
-                  'entranceNumber', 'apartmentNumber']
+                  'entranceNumber', 'apartmentsNumber']
 
 
 class UserSerializer(serializers.ModelSerializer):

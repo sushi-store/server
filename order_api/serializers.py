@@ -63,7 +63,7 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ['id', 'customerName',
-                  'email', 'phoneNumber', 'deliveryType', 'paymentMethod', 'status', 'address', 'order', 'price', 'dateOfOrder']
+                  'email', 'phoneNumber', 'deliveryType', 'paymentMethod', 'status', 'address', 'order', 'price', 'amount', 'dateOfOrder']
 
     def create(self, validated_data):
         try:
@@ -86,6 +86,9 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def get_price(self, obj):
         return obj.price
+
+    def get_amount(self, obj):
+        return obj.amount
 
     def get_status(self, obj):
         return obj.get_status_display()

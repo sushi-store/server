@@ -61,7 +61,7 @@ class Migration(migrations.Migration):
                     blank=True, default='', max_length=10)),
                 ('entrance_number', models.CharField(
                     blank=True, default='', max_length=10)),
-                ('apartment_number', models.CharField(
+                ('apartments_number', models.CharField(
                     blank=True, default='', max_length=10)),
                 ('order', models.OneToOneField(null=True, on_delete=django.db.models.deletion.CASCADE,
                  related_name='order_address', to='order.order')),

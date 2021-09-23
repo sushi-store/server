@@ -65,7 +65,7 @@ class Address(models.Model):
     street_name = models.CharField(max_length=50, blank=True, default='')
     house_number = models.CharField(max_length=10, blank=True, default='')
     entrance_number = models.CharField(max_length=10, blank=True, default='')
-    apartment_number = models.CharField(max_length=10, blank=True, default='')
+    apartments_number = models.CharField(max_length=10, blank=True, default='')
     user = models.ForeignKey(
         CustomerUser, on_delete=CASCADE, related_name='user', null=True)
     order = models.OneToOneField(
