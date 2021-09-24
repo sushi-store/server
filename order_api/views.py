@@ -8,20 +8,6 @@ from rest_framework.permissions import IsAuthenticated
 import re
 
 
-class OrderDetailUserId(APIView):
-
-    def get(self, request, pk):
-        try:
-            orders = Order.objects.filter(user_id=pk)
-        except Order.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-        serializer = OrderSerializer(
-            orders, context={'request': request}, many=True)
-
-        return Response(serializer.data)
-
-
 class OrderDetailUUId(APIView):
 
     def get(self, request, uuid):
@@ -54,7 +40,7 @@ class CreateTempOrder(APIView):
     def post(self, request):
         request.data.update({"userId": None})
         if not re.match(r"[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}", request.data.get("uuid", "")):
-            return Response("UUId not matches a format.", status=status.HTTP_400_BAD_REQUEST)
+            return Response("UUId not matches a format.", status=status.HTTP_412_PRECONDITION_FAILED)
         order_serializer = OrderSerializer(data=request.data)
         if order_serializer.is_valid():
             order = order_serializer.save()
@@ -64,19 +50,27 @@ class CreateTempOrder(APIView):
 
 
 class OrdersList(APIView):
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        orders = Order.objects.all()
-        page = request.GET.get('page', 1)
-        paginator = Paginator(orders, 10)
-        try:
-            data = paginator.page(page)
-        except PageNotAnInteger:
-            data = paginator.page(1)
-        except EmptyPage:
-            data = paginator.page(paginator.num_pages)
+        if request.user.is_superuser:
+            orders = Order.objects.all()
+            page = request.GET.get('page', 1)
+            paginator = Paginator(orders, 10)
+            try:
+                data = paginator.page(page)
+            except PageNotAnInteger:
+                data = paginator.page(1)
+            except EmptyPage:
+                data = paginator.page(paginator.num_pages)
+
+        else:
+            try:
+                orders = Order.objects.filter(user_id=request.user.id)
+            except Order.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
 
         serializer = OrderSerializer(
-            data, context={'request': request}, many=True)
+            orders, context={'request': request}, many=True)
 
         return Response(serializer.data)
