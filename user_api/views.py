@@ -65,6 +65,7 @@ class UserCreateView(APIView):
                     send_confirmation_email(request, user)
                 except Exception as error:
                     user.delete()
+                    return Response(error, status=status.HTTP_400_BAD_REQUEST)
                 return Response(status=status.HTTP_201_CREATED)
         return Response(reg_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
