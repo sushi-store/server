@@ -179,7 +179,7 @@ class GoogleAuth(APIView):
                 tokena = AccessToken().for_user(user)
                 return Response({"refresh": str(tokenr), "access": str(tokena)}, status=status.HTTP_200_OK)
             except Exception as e:
-                return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({"error": str(e)}, status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
