@@ -175,10 +175,11 @@ class GoogleAuth(APIView):
         if idinfo['email_verified']:
             try:
                 user = CustomerUser.objects.get(email=idinfo['email'])
-                serializer = UserSerializer(user)
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                tokenr = TokenObtainPairSerializer().get_token(user)
+                tokena = AccessToken().for_user(user)
+                return Response({"refresh": str(tokenr), "access": str(tokena)}, status=status.HTTP_200_OK)
             except:
-                Response(status=status.HTTP_412_PRECONDITION_FAILED)
+                Response(status=status.HTTP_401_UNAUTHORIZED)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
