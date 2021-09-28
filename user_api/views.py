@@ -178,7 +178,7 @@ class GoogleAuth(APIView):
                 serializer = UserSerializer(user)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             except:
-                Response(status=status.HTTP_204_NO_CONTENT)
+                Response(status=status.HTTP_412_PRECONDITION_FAILED)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
