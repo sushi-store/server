@@ -10,6 +10,8 @@ from user.models import CustomerUser
 from cryptography.fernet import Fernet
 from django.conf import settings
 import jwt
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 import datetime
 
 
@@ -66,7 +68,9 @@ class UserCreateView(APIView):
                 except Exception as error:
                     user.delete()
                     return Response(error, status=status.HTTP_400_BAD_REQUEST)
-                return Response(status=status.HTTP_201_CREATED)
+                tokenr = TokenObtainPairSerializer().get_token(user)
+                tokena = AccessToken().for_user(user)
+                return Response({"refresh": str(tokenr), "access": str(tokena)}, status=status.HTTP_201_CREATED)
         return Response(reg_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
