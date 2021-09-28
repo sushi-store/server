@@ -13,6 +13,8 @@ import jwt
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 import datetime
+from google.oauth2 import id_token
+from google.auth.transport import requests
 
 
 def int_to_bytes(x: int) -> bytes:
@@ -158,6 +160,26 @@ class ResetPasswordView(APIView):
                 return Response('Password has not been changed.', status=status.HTTP_304_NOT_MODIFIED)
         else:
             return Response('Invalid data. Password has not been changed.', status=status.HTTP_400_BAD_REQUEST)
+
+
+class GoogleAuth(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        try:
+            g_token = request.data.get('token')
+            idinfo = id_token.verify_oauth2_token(g_token, requests.Request())
+        except:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        if idinfo['email_verified']:
+            try:
+                user = CustomerUser.objects.get(email=idinfo['email'])
+                serializer = UserSerializer(user)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except:
+                Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class BlacklistTokenUpdateView(APIView):

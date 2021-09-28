@@ -24,8 +24,7 @@ class UserAdminConfig(UserAdmin):
     model = CustomerUser
 
     search_fields = ('email', 'name', 'phone_number')
-    list_filter = ('email', 'name',
-                   'phone_number', 'is_staff')
+    list_filter = ('email', 'is_email_confirmed', 'is_staff')
     ordering = ('-start_date',)
     list_display = ('email', 'name',
                     'phone_number', 'is_staff', 'is_email_confirmed')
