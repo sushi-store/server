@@ -1,20 +1,21 @@
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from .serializers import UserSerializer, RegisterUserSerializer
-from rest_framework import status
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.sites.shortcuts import get_current_site
-from django.core.mail import EmailMessage
-from user.models import CustomerUser
+import datetime
+
+import jwt
 from cryptography.fernet import Fernet
 from django.conf import settings
-import jwt
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import EmailMessage
+from google.auth.transport import requests
+from google.oauth2 import id_token
+from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
-import datetime
-from google.oauth2 import id_token
-from google.auth.transport import requests
+from user.models import CustomerUser
+
+from .serializers import RegisterUserSerializer, UserSerializer
 
 
 def int_to_bytes(x: int) -> bytes:
@@ -44,7 +45,6 @@ class UserManageView(APIView):
 
     def get(self, request):
         serializer = UserSerializer(request.user)
-
         return Response(serializer.data)
 
     def put(self, request):
@@ -165,12 +165,12 @@ class ResetPasswordView(APIView):
 class GoogleAuth(APIView):
     permission_classes = [AllowAny]
 
-    def get(self, request):
+    def post(self, request):
         try:
-            g_token = request.data.get('token')
+            g_token = request.data['token']
             idinfo = id_token.verify_oauth2_token(g_token, requests.Request())
-        except:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         if idinfo['email_verified']:
             try:
@@ -178,8 +178,8 @@ class GoogleAuth(APIView):
                 tokenr = TokenObtainPairSerializer().get_token(user)
                 tokena = AccessToken().for_user(user)
                 return Response({"refresh": str(tokenr), "access": str(tokena)}, status=status.HTTP_200_OK)
-            except:
-                Response(status=status.HTTP_401_UNAUTHORIZED)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
