@@ -1,16 +1,21 @@
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from .serializers import UserSerializer, RegisterUserSerializer
-from rest_framework import status
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.sites.shortcuts import get_current_site
-from django.core.mail import EmailMessage
-from user.models import CustomerUser
+import datetime
+
+import jwt
 from cryptography.fernet import Fernet
 from django.conf import settings
-import jwt
-import datetime
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import EmailMessage
+from google.auth.transport import requests
+from google.oauth2 import id_token
+from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
+from user.models import CustomerUser
+
+from .serializers import RegisterUserSerializer, UserSerializer
 
 
 def int_to_bytes(x: int) -> bytes:
@@ -24,7 +29,8 @@ def int_from_bytes(xbytes: bytes) -> int:
 def send_confirmation_email(request, user):
     cipher_suite = Fernet(settings.FERNET_KEY_EMAIL)
     encoded_user_id = cipher_suite.encrypt(int_to_bytes(user.pk))
-    token = jwt.encode({"user_id": encoded_user_id.decode("utf-8")}, settings.SECRET_KEY, algorithm="HS256")
+    token = jwt.encode({"user_id": encoded_user_id.decode(
+        "utf-8")}, settings.SECRET_KEY, algorithm="HS256")
     current_site = get_current_site(request)
     mail_subject = 'Activate your sushi shop account.'
     message = f'http://{ current_site.domain }/api/user/activate/{ token }'
@@ -32,18 +38,18 @@ def send_confirmation_email(request, user):
         mail_subject, message, to=[user.email]
     )
     email.send()
-    
+
 
 class UserManageView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         serializer = UserSerializer(request.user)
-
         return Response(serializer.data)
 
     def put(self, request):
-        serializer = UserSerializer(request.user, data=request.data, partial=True)
+        serializer = UserSerializer(
+            request.user, data=request.data, partial=True)
 
         if serializer.is_valid():
             serializer.save()
@@ -59,8 +65,14 @@ class UserCreateView(APIView):
         if reg_serializer.is_valid():
             user = reg_serializer.save()
             if user:
-                send_confirmation_email(request, user)
-                return Response(status=status.HTTP_201_CREATED)
+                try:
+                    send_confirmation_email(request, user)
+                except Exception as error:
+                    user.delete()
+                    return Response(error, status=status.HTTP_400_BAD_REQUEST)
+                tokenr = TokenObtainPairSerializer().get_token(user)
+                tokena = AccessToken().for_user(user)
+                return Response({"refresh": str(tokenr), "access": str(tokena)}, status=status.HTTP_201_CREATED)
         return Response(reg_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -70,8 +82,10 @@ class ActivationView(APIView):
     def get(self, request, token):
         cipher_suite = Fernet(settings.FERNET_KEY_EMAIL)
         try:
-            decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            user = CustomerUser.objects.get(pk=int_from_bytes(cipher_suite.decrypt(str.encode(decoded_token['user_id']))))
+            decoded_token = jwt.decode(
+                token, settings.SECRET_KEY, algorithms=["HS256"])
+            user = CustomerUser.objects.get(pk=int_from_bytes(
+                cipher_suite.decrypt(str.encode(decoded_token['user_id']))))
         except:
             user = None
         if user is not None:
@@ -91,9 +105,12 @@ class ResetPasswordView(APIView):
     def get(self, request, token):
         cipher_suite = Fernet(settings.FERNET_KEY_PASSWORD)
         try:
-            decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            expire_date = datetime.datetime.fromtimestamp(decoded_token['expire_date'])
-            user = CustomerUser.objects.get(pk=int_from_bytes(cipher_suite.decrypt(str.encode(decoded_token['user_id']))))
+            decoded_token = jwt.decode(
+                token, settings.SECRET_KEY, algorithms=["HS256"])
+            expire_date = datetime.datetime.fromtimestamp(
+                decoded_token['expire_date'])
+            user = CustomerUser.objects.get(pk=int_from_bytes(
+                cipher_suite.decrypt(str.encode(decoded_token['user_id']))))
         except:
             user = None
         if user and expire_date > datetime.datetime.now() and user.is_email_confirmed:
@@ -104,12 +121,12 @@ class ResetPasswordView(APIView):
     def post(self, request):
         cipher_suite = Fernet(settings.FERNET_KEY_PASSWORD)
         try:
-            email = request.POST.get('email')
+            email = request.data.get('email')
             user = CustomerUser.objects.get(email=email)
             encoded_user_id = cipher_suite.encrypt(int_to_bytes(user.pk))
-            token = jwt.encode({"user_id": encoded_user_id.decode("utf-8"), 
-                                "expire_date": (datetime.datetime.now() + datetime.timedelta(hours=4)).timestamp()}, 
-                                settings.SECRET_KEY, algorithm="HS256")
+            token = jwt.encode({"user_id": encoded_user_id.decode("utf-8"),
+                                "expire_date": (datetime.datetime.now() + datetime.timedelta(hours=4)).timestamp()},
+                               settings.SECRET_KEY, algorithm="HS256")
             current_site = get_current_site(request)
             mail_subject = 'Password reset.'
             message = f'http://{ current_site.domain }/api/user/reset/password/{ token }'
@@ -117,18 +134,21 @@ class ResetPasswordView(APIView):
                 mail_subject, message, to=[user.email]
             )
             email.send()
-        except:
+        except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        
+
         return Response(status=status.HTTP_200_OK)
 
     def put(self, request, token):
         cipher_suite = Fernet(settings.FERNET_KEY_PASSWORD)
         try:
             password = request.data.get('password')
-            decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            expire_date = datetime.datetime.fromtimestamp(decoded_token['expire_date'])
-            user = CustomerUser.objects.get(pk=int_from_bytes(cipher_suite.decrypt(str.encode(decoded_token['user_id']))))
+            decoded_token = jwt.decode(
+                token, settings.SECRET_KEY, algorithms=["HS256"])
+            expire_date = datetime.datetime.fromtimestamp(
+                decoded_token['expire_date'])
+            user = CustomerUser.objects.get(pk=int_from_bytes(
+                cipher_suite.decrypt(str.encode(decoded_token['user_id']))))
         except:
             user = None
         if user and expire_date > datetime.datetime.now() and user.is_email_confirmed:
@@ -140,6 +160,27 @@ class ResetPasswordView(APIView):
                 return Response('Password has not been changed.', status=status.HTTP_304_NOT_MODIFIED)
         else:
             return Response('Invalid data. Password has not been changed.', status=status.HTTP_400_BAD_REQUEST)
+
+
+class GoogleAuth(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            g_token = request.data['token']
+            idinfo = id_token.verify_oauth2_token(g_token, requests.Request())
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        if idinfo['email_verified']:
+            try:
+                user = CustomerUser.objects.get(email=idinfo['email'])
+                tokenr = TokenObtainPairSerializer().get_token(user)
+                tokena = AccessToken().for_user(user)
+                return Response({"refresh": str(tokenr), "access": str(tokena)}, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class BlacklistTokenUpdateView(APIView):

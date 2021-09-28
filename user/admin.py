@@ -6,8 +6,8 @@ from rest_framework_simplejwt.tokens import OutstandingToken
 
 class AddressInline(admin.StackedInline):
     model = Address
-    fields = ('street_name', 'street_number', 'entrance_number',
-              'housing_number', 'apartment_number', 'floor_number')
+    fields = ('street_name', 'house_number',
+              'entrance_number', 'apartments_number')
 
     def get_max_num(self, request, obj=None, **kwargs):
         return 3
@@ -23,22 +23,20 @@ class UserAdminConfig(UserAdmin):
 
     model = CustomerUser
 
-    search_fields = ('email', 'last_name', 'first_name', 'phone_number')
-    list_filter = ('email', 'last_name', 'first_name',
-                   'phone_number', 'is_staff')
+    search_fields = ('email', 'name', 'phone_number')
+    list_filter = ('email', 'is_email_confirmed', 'is_staff')
     ordering = ('-start_date',)
-    list_display = ('email', 'last_name', 'first_name',
+    list_display = ('email', 'name',
                     'phone_number', 'is_staff', 'is_email_confirmed')
     fieldsets = (
-        (None, {'fields': ('email', 'last_name',
-         'first_name', 'patronymic', 'phone_number')}),
+        (None, {'fields': ('email', 'name', 'phone_number')}),
         ('Permissions', {'fields': ('is_staff', )}),
     )
 
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'last_name', 'first_name', 'phone_number', 'password1', 'password2', 'is_staff')}
+            'fields': ('email', 'name', 'phone_number', 'password1', 'password2', 'is_staff')}
          ),
     )
 

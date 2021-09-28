@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django import forms
-from .models import OrderSushi, OrderItem
+from .models import Order, OrderItem
 from user.models import Address
 
 
@@ -21,17 +21,8 @@ def set_cancelled(modeladmin, request, queryset):
 
 class AddressInline(admin.StackedInline):
     model = Address
-    fields = ('street_name', 'street_number', 'entrance_number',
-              'housing_number', 'apartment_number', 'floor_number')
-
-    def get_max_num(self, request, obj=None, **kwargs):
-        return 1
-
-    def get_min_num(self, request, obj=None, **kwargs):
-        return 1
-
-    def get_extra(self, request, obj=None, **kwargs):
-        return 0
+    fields = ('street_name', 'house_number',
+              'entrance_number', 'apartments_number')
 
 
 class OrdersInline(admin.StackedInline):
@@ -51,18 +42,22 @@ class OrdersInline(admin.StackedInline):
 
 class OrderModelForm(forms.ModelForm):
     class Meta:
-        model = OrderSushi
-        fields = ("customer_name", "customer_last_name", "email",
+        model = Order
+        fields = ("customer_name", "email",
                   "phone_number", "delivery_type", "payment_method")
 
 
 class OrderAdmin(admin.ModelAdmin):
     form = OrderModelForm
     list_filter = ('status',)
-    list_display = ('customer_last_name', 'customer_name',
-                    'phone_number', 'price', 'status')
+    list_display = ('phone_number',
+                    'customer_name', 'get_address', 'price', 'status', 'date_of_order')
     inlines = (AddressInline, OrdersInline, )
     actions = [set_in_progress, set_done, set_cancelled]
 
+    @admin.display(description='Order Address')
+    def get_address(self, obj):
+        return Address.objects.get(order=obj)
 
-admin.site.register(OrderSushi, OrderAdmin)
+
+admin.site.register(Order, OrderAdmin)
