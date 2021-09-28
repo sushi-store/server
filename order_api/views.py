@@ -11,7 +11,7 @@ import re
 class OrderDetailUUId(APIView):
 
     def get(self, request, uuid):
-        if not re.match(r"[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}", request.data.get("uuid", "")):
+        if not re.match(r"[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}", uuid):
             return Response("UUId not matches a format.", status=status.HTTP_412_PRECONDITION_FAILED)
         try:
             orders = Order.objects.filter(uuid=uuid)
