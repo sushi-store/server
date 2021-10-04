@@ -46,18 +46,17 @@ class UserSerializer(serializers.ModelSerializer):
         return data
 
     def update(self, instance, validated_data):
+        addresses = validated_data.get(
+            "addresses", {})
         try:
-            addresses = validated_data.pop('addresses')
             if len(addresses) <= 3:
-                Address.objects.filter(user=instance).delete()
-                for address in addresses:
-                    Address.objects.create(user=instance, **address)
+                if addresses:
+                    Address.objects.filter(user=instance).delete()
+                    for address in addresses:
+                        Address.objects.create(user=instance, **address)
                 return super(UserSerializer, self).update(instance, validated_data)
             else:
                 raise TooMuchAddressesError
-        except KeyError:
-            error = {'message': 'Addresses is not included.'}
-            raise ParseError(error)
         except TooMuchAddressesError as e:
             error = {'message': str(e)}
             raise NotAcceptable(error)
