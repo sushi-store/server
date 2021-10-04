@@ -33,11 +33,30 @@ def send_confirmation_email(request, user):
         "utf-8")}, settings.SECRET_KEY, algorithm="HS256")
     current_site = get_current_site(request)
     mail_subject = 'Activate your sushi shop account.'
-    message = f'http://{ current_site.domain }/api/user/activate/{ token }'
+    message = f'http://localhost:3000/api/user/activate/{ token }'
     email = EmailMessage(
         mail_subject, message, to=[user.email]
     )
     email.send()
+
+
+class UpdatePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        passwords = request.data
+        user = request.user
+        if user.check_password(passwords['oldPassword']):
+            user.set_password(passwords['newPassword'])
+            user.save()
+            message = f'Your password has been changed from your profile page.'
+            email = EmailMessage(
+                "Password Changed", message, to=[user.email]
+            )
+            email.send()
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "Invalid Password"}, status=status.HTTP_403_FORBIDDEN)
 
 
 class UserManageView(APIView):

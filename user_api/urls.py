@@ -13,6 +13,8 @@ urlpatterns = [
          name='send_reset_email'),
     path('reset/password/<token>',
          views.ResetPasswordView.as_view(), name='reset_password'),
+    path('password/update',
+         views.UpdatePasswordView.as_view(), name='update_password'),
     path('google-oauth', views.GoogleAuth.as_view(),
          name='get_user_by_google_token'),
 ]
