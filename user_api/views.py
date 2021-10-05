@@ -33,7 +33,7 @@ def send_confirmation_email(request, user):
         "utf-8")}, settings.SECRET_KEY, algorithm="HS256")
     current_site = get_current_site(request)
     mail_subject = 'Activate your sushi shop account.'
-    message = f'http://localhost:3000/api/user/activate/{ token }'
+    message = f'http://localhost:3000/account/activate/{ token }'
     email = EmailMessage(
         mail_subject, message, to=[user.email]
     )
