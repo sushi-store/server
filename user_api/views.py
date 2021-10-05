@@ -148,7 +148,7 @@ class ResetPasswordView(APIView):
                                settings.SECRET_KEY, algorithm="HS256")
             current_site = get_current_site(request)
             mail_subject = 'Password reset.'
-            message = f'localhost:3000/account/reset-password/{ token }'
+            message = f'http://localhost:3000/account/reset-password/{ token }'
             email = EmailMessage(
                 mail_subject, message, to=[user.email]
             )
