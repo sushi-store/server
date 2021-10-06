@@ -21,7 +21,7 @@ class Ingredient(models.Model):
     name_rus = models.CharField(max_length=100, null=False)
 
     image = models.ImageField(
-        upload_to=settings.MEDIA_ROOT_PATH + 'ingredients/')
+        upload_to=settings.STATIC_ROOT_PATH + 'ingredients/')
 
     def __str__(self) -> str:
         return f'{self.name}'
@@ -32,7 +32,7 @@ class Ingredient(models.Model):
 
 class Sushi(models.Model):
     name = models.CharField(max_length=100, null=False)
-    image = models.ImageField(upload_to=settings.MEDIA_ROOT_PATH, null=True)
+    image = models.ImageField(upload_to=settings.STATIC_ROOT_PATH, null=True)
     category = models.ForeignKey(
         Category, on_delete=models.CASCADE, related_name='category')
     ingredients = models.ManyToManyField(
