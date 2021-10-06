@@ -32,7 +32,7 @@ def send_confirmation_email(request, user):
     token = jwt.encode({"user_id": encoded_user_id.decode(
         "utf-8")}, settings.SECRET_KEY, algorithm="HS256")
     mail_subject = 'Activate your sushi shop account.'
-    message = settings.CLIENT_URL + f'account/activate/{ token }'
+    message = settings.CLIENT_URL + f'/account/activate/{ token }'
     email = EmailMessage(
         mail_subject, message, to=[user.email]
     )
@@ -147,7 +147,7 @@ class ResetPasswordView(APIView):
                                settings.SECRET_KEY, algorithm="HS256")
             mail_subject = 'Password reset.'
             message = settings.CLIENT_URL + \
-                f'account/reset-password/{ token }'
+                f'/account/reset-password/{ token }'
             email = EmailMessage(
                 mail_subject, message, to=[user.email]
             )
