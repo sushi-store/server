@@ -43,7 +43,7 @@ def send_confirmation_email(request, user):
 class UpdatePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
+    def put(self, request):
         passwords = request.data
         user = request.user
         if user.check_password(passwords['oldPassword']):
@@ -92,7 +92,7 @@ class UserCreateView(APIView):
                 tokenr = TokenObtainPairSerializer().get_token(user)
                 tokena = AccessToken().for_user(user)
                 return Response({"refresh": str(tokenr), "access": str(tokena)}, status=status.HTTP_201_CREATED)
-        return Response(reg_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(reg_serializer.errors, status=status.HTTP_409_CONFLICT)
 
 
 class ActivationView(APIView):

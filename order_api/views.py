@@ -12,7 +12,7 @@ class OrderDetailUUId(APIView):
 
     def get(self, request, uuid):
         if not re.match(r"[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}", uuid):
-            return Response("UUId not matches a format.", status=status.HTTP_412_PRECONDITION_FAILED)
+            return Response("UUId not matches a format.", status=status.HTTP_204_NO_CONTENT)
         try:
             orders = Order.objects.filter(uuid=uuid)
         except Order.DoesNotExist:
@@ -42,7 +42,7 @@ class CreateTempOrder(APIView):
     def post(self, request):
         request.data.update({"userId": None})
         if not re.match(r"[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}", request.data.get("uuid", "")):
-            return Response("UUId not matches a format.", status=status.HTTP_412_PRECONDITION_FAILED)
+            return Response("UUId not matches a format.", status=status.HTTP_204_NO_CONTENT)
         order_serializer = OrderSerializer(data=request.data)
         if order_serializer.is_valid():
             order = order_serializer.save()
