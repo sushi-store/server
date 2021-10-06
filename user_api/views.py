@@ -31,9 +31,8 @@ def send_confirmation_email(request, user):
     encoded_user_id = cipher_suite.encrypt(int_to_bytes(user.pk))
     token = jwt.encode({"user_id": encoded_user_id.decode(
         "utf-8")}, settings.SECRET_KEY, algorithm="HS256")
-    current_site = get_current_site(request)
     mail_subject = 'Activate your sushi shop account.'
-    message = f'http://localhost:3000/account/activate/{ token }'
+    message = settings.CLIENT_URL + f'account/activate/{ token }'
     email = EmailMessage(
         mail_subject, message, to=[user.email]
     )
@@ -146,9 +145,9 @@ class ResetPasswordView(APIView):
             token = jwt.encode({"user_id": encoded_user_id.decode("utf-8"),
                                 "expire_date": (datetime.datetime.now() + datetime.timedelta(hours=4)).timestamp()},
                                settings.SECRET_KEY, algorithm="HS256")
-            current_site = get_current_site(request)
             mail_subject = 'Password reset.'
-            message = f'http://localhost:3000/account/reset-password/{ token }'
+            message = settings.CLIENT_URL + \
+                f'account/reset-password/{ token }'
             email = EmailMessage(
                 mail_subject, message, to=[user.email]
             )
