@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import NotAcceptable, ParseError
 from user.models import CustomerUser, Address
 from phonenumber_field.serializerfields import PhoneNumberField
+import logging
 
 
 class TooMuchAddressesError(Exception):
@@ -10,25 +11,23 @@ class TooMuchAddressesError(Exception):
 
 
 class AddressSerializer(serializers.ModelSerializer):
-    streetName = serializers.CharField(source='street_name')
-    streetNumber = serializers.CharField(source='street_number')
+    streetName = serializers.CharField(
+        source='street_name', allow_blank=True, allow_null=True, default='')
+    houseNumber = serializers.CharField(
+        source='house_number', allow_blank=True, allow_null=True, default='')
     entranceNumber = serializers.CharField(
-        source='entrance_number', required=False)
-    housingNumber = serializers.CharField(
-        source='housing_number', required=False)
-    apartmentNumber = serializers.CharField(
-        source='apartment_number', required=False)
-    floorNumber = serializers.CharField(source='floor_number', required=False)
+        source='entrance_number', allow_blank=True, allow_null=True, default='')
+    apartmentsNumber = serializers.CharField(
+        source='apartments_number', allow_blank=True, allow_null=True, default='')
 
     class Meta:
         model = Address
-        fields = ['streetName', 'streetNumber', 'entranceNumber',
-                  'housingNumber', 'apartmentNumber', 'floorNumber']
+        fields = ['streetName', 'houseNumber',
+                  'entranceNumber', 'apartmentsNumber']
 
 
 class UserSerializer(serializers.ModelSerializer):
-    lastName = serializers.CharField(source='last_name')
-    firstName = serializers.CharField(source='first_name')
+    name = serializers.CharField()
     addresses = AddressSerializer(many=True, required=False)
     phoneNumber = PhoneNumberField(source='phone_number')
     isEmailConfirmed = serializers.BooleanField(
@@ -37,43 +36,48 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomerUser
-        fields = ['email', 'lastName', 'firstName', 'patronymic',
+        fields = ['email', 'name',
                   'phoneNumber', 'isEmailConfirmed', 'addresses']
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['addresses'] = AddressSerializer(
+            instance=Address.objects.filter(user=instance), many=True).data
+        return data
+
     def update(self, instance, validated_data):
+        addresses = validated_data.get(
+            "addresses", {})
         try:
-            addresses = validated_data.pop('addresses')
             if len(addresses) <= 3:
-                Address.objects.filter(user=instance).delete()
-                for address in addresses:
-                    Address.objects.create(user=instance, **address)
+                if addresses:
+                    Address.objects.filter(user=instance).delete()
+                    for address in addresses:
+                        Address.objects.create(user=instance, **address)
                 return super(UserSerializer, self).update(instance, validated_data)
             else:
                 raise TooMuchAddressesError
-        except KeyError:
-            error = {'message': 'Addresses is not included.'}
-            raise ParseError(error)
         except TooMuchAddressesError as e:
             error = {'message': str(e)}
             raise NotAcceptable(error)
 
     def validate_phoneNumber(self, value):
-        if CustomerUser.objects.filter(phone_number__iexact=value).exists():
+        users = CustomerUser.objects.exclude(pk=self.instance.pk)
+        if users.filter(phone_number__iexact=value).exists():
             raise serializers.ValidationError("Phone number already exists.")
         return value
 
 
 class RegisterUserSerializer(serializers.ModelSerializer):
-    lastName = serializers.CharField(source='last_name')
-    firstName = serializers.CharField(source='first_name')
+    name = serializers.CharField()
     addresses = AddressSerializer(many=True, required=False)
     phoneNumber = PhoneNumberField(source='phone_number')
     email = serializers.EmailField()
 
     class Meta:
         model = CustomerUser
-        fields = ('email', 'lastName', 'firstName', 'patronymic',
-                  'phoneNumber', 'password', 'addresses')
+        fields = ['email', 'name',
+                  'phoneNumber', 'password', 'addresses']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):

@@ -1,9 +1,9 @@
 from django.db import models
-from sushi.models import Sushi
 from phonenumber_field.modelfields import PhoneNumberField
+from sushi.models import Sushi
 
 
-class OrderSushi(models.Model):
+class Order(models.Model):
     ORDER_STATUS = (
         ('P', 'Pending'),
         ('I', 'In Process'),
@@ -18,17 +18,31 @@ class OrderSushi(models.Model):
         ('C', 'Cash'),
         ('D', 'Card'),
     )
-    customer_name = models.CharField(max_length=50)
-    customer_last_name = models.CharField(max_length=50)
-    email = models.EmailField(blank=True)
-    phone_number = PhoneNumberField(null=False, blank=False, unique=True)
+    customer_name = models.CharField(max_length=100)
+    email = models.EmailField(null=True, blank=True)
+    phone_number = PhoneNumberField(null=False, blank=False)
     delivery_type = models.CharField(
         max_length=1, default='D', choices=DELIVERIES_TYPES)
     payment_method = models.CharField(
         max_length=1, default='С', choices=PAYMENT_METHODS)
+    user_id = models.PositiveIntegerField(null=True, default=None)
+    uuid = models.CharField(max_length=50, null=True, default=None)
     status = models.CharField(max_length=1, default='P', choices=ORDER_STATUS)
-    price = models.PositiveIntegerField(default=0)
     date_of_order = models.DateTimeField(auto_now=True)
+
+    @property
+    def price(self):
+        full_price = 0
+        for order_item in self.order.all():
+            full_price += order_item.sushi.price * order_item.amount
+        return full_price
+
+    @property
+    def amount(self):
+        total_amount = 0
+        for order_item in self.order.all():
+            total_amount += order_item.amount
+        return total_amount
 
     class Meta:
         verbose_name_plural = "Orders"
@@ -36,16 +50,12 @@ class OrderSushi(models.Model):
     def __str__(self) -> str:
         return f"Order #{self.id}"
 
-    def save(self, *args, **kwargs):
-        # print(self.orderitem_set.all())
-        for order_item in self.orderitem_set.all():
-            self.price = order_item.sushi.price * order_item.amount
-        super(OrderSushi, self).save(*args, **kwargs)
-
 
 class OrderItem(models.Model):
-    sushi = models.ForeignKey(Sushi, on_delete=models.CASCADE)
-    order = models.ForeignKey(OrderSushi, on_delete=models.CASCADE)
+    sushi = models.ForeignKey(
+        Sushi, on_delete=models.CASCADE, related_name='sushi')
+    order = models.ForeignKey(
+        Order, on_delete=models.CASCADE, related_name='order')
     amount = models.PositiveSmallIntegerField(default=1)
 
     class Meta:

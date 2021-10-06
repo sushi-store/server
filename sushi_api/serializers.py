@@ -2,14 +2,6 @@ from rest_framework import serializers
 from sushi.models import Sushi, Category, Ingredient
 
 
-class ReadOnlyModelSerializer(serializers.ModelSerializer):
-    def get_fields(self, *args, **kwargs):
-        fields = super().get_fields(*args, **kwargs)
-        for field in fields:
-            fields[field].read_only = True
-        return fields
-
-
 class CategorySerializer(serializers.ModelSerializer):
     categoryName = serializers.CharField(source='category_name')
     categoryNameRus = serializers.CharField(
@@ -31,11 +23,11 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'nameRus', 'nameUkr', 'image',)
 
 
-class SushiSerializer(ReadOnlyModelSerializer):
-    categoryNames = CategorySerializer(source='category')
-    ingredients = IngredientSerializer(many=True)
+class SushiSerializer(serializers.ModelSerializer):
+    categoryNames = CategorySerializer(source='category', read_only=True)
+    ingredients = IngredientSerializer(many=True, read_only=True)
     image = serializers.ImageField(
-        max_length=None, use_url=True
+        max_length=None, use_url=True, read_only=True
     )
 
     next_slug = serializers.SerializerMethodField('get_next_slug')
@@ -59,3 +51,5 @@ class SushiSerializer(ReadOnlyModelSerializer):
         model = Sushi
         fields = ('id', 'slug', 'name', 'description', 'image', 'categoryNames', 'ingredients',
                   'quantity', 'price', 'discount', 'next_slug', 'prev_slug',)
+        read_only_fields = ('name', 'description', 'image', 'categoryNames', 'ingredients',
+                            'quantity', 'price', 'discount', 'next_slug', 'prev_slug',)
