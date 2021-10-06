@@ -220,5 +220,5 @@ EMAIL_HOST_USER = 'sushi.store.plt@gmail.com'
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 
 MEDIA_URL = 'media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, '')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_ROOT_PATH = 'img/'
