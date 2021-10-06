@@ -1,1 +1,1 @@
-web: waitress-serve sushi_store.wg
+web: waitress-serve sushi_store.wsgi
