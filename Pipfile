@@ -27,6 +27,7 @@ Pillow = "==8.3.1"
 PyJWT = "==2.1.0"
 google-auth = "*"
 requests = "*"
+waitress = "*"
 
 [requires]
 python_version = "3.9"

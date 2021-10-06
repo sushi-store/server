@@ -53,6 +53,8 @@ SECRET_KEY = env.str('SECRET_KEY')
 FERNET_KEY_EMAIL = bytes(env.str('FERNET_KEY_EMAIL'), 'utf-8')
 FERNET_KEY_PASSWORD = bytes(env.str('FERNET_KEY_PASSWORD'), 'utf-8')
 
+CLIENT_URL = env.str('CLIENT_URL')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -62,6 +64,7 @@ CORS_ORIGIN_ALLOW_ALL = False
 
 CORS_ORIGIN_WHITELIST = (
     'http://localhost:3000',
+    CLIENT_URL,
 )
 
 
@@ -217,5 +220,5 @@ EMAIL_HOST_USER = 'sushi.store.plt@gmail.com'
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 
 MEDIA_URL = 'media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, '')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_ROOT_PATH = 'img/'
