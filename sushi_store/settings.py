@@ -64,6 +64,7 @@ CORS_ORIGIN_ALLOW_ALL = False
 
 CORS_ORIGIN_WHITELIST = (
     'http://localhost:3000',
+    'https://sushi-store.vercel.app',
     CLIENT_URL,
 )
 
@@ -128,11 +129,14 @@ WSGI_APPLICATION = 'sushi_store.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'd6atsgqhnno7fp',
+        'HOST': 'ec2-34-254-120-2.eu-west-1.compute.amazonaws.com',
+        'PORT': '5432',
+        'USER': 'thjrajkwkrfkqf',
+        'PASSWORD': 'f0781fc4901395a568fa1989f19561afbcef2d7dcadf529337f2f6ea321ec740'
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
