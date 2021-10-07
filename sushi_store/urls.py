@@ -23,6 +23,7 @@ from rest_framework_simplejwt.views import (
 )
 
 admin.site.site_header = 'Sushi shop administration'
+admin.site.site_url = 'https://sushi-store.vercel.app/'
 
 urlpatterns = [
     path('9f6d0763403736ed72c3467da71ad631a6905e8c02052adf51177787edcd34f1/',
