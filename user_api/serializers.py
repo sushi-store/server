@@ -63,7 +63,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def validate_phoneNumber(self, value):
         users = CustomerUser.objects.exclude(pk=self.instance.pk)
-        if users.filter(phone_number__iexact=value).exists():
+        if users.filter(phone_number__iexact=str(value)).exists():
             raise serializers.ValidationError("Phone number already exists.")
         return value
 
@@ -109,6 +109,6 @@ class RegisterUserSerializer(serializers.ModelSerializer):
         return lower_email
 
     def validate_phoneNumber(self, value):
-        if CustomerUser.objects.filter(phone_number__iexact=value).exists():
+        if CustomerUser.objects.filter(phone_number__iexact=str(value)).exists():
             raise serializers.ValidationError("Phone number already exists.")
         return value
