@@ -32,7 +32,7 @@ class CreateOrder(APIView):
 
     def post(self, request):
         request.data.update({"userId": request.user.id, "uuid": None})
-        order_serializer = OrderSerializer(data=request.data)
+        order_serializer = OrderSerializer(data=request.data, context={'request': request})
         if order_serializer.is_valid():
             order = order_serializer.save()
             if order:
@@ -46,7 +46,8 @@ class CreateTempOrder(APIView):
         request.data.update({"userId": None})
         if not re.match(r"[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}", request.data.get("uuid", "")):
             return Response("UUId not matches a format.", status=status.HTTP_204_NO_CONTENT)
-        order_serializer = OrderSerializer(data=request.data)
+        order_serializer = OrderSerializer(
+            data=request.data, context={'request': request})
         if order_serializer.is_valid():
             order = order_serializer.save()
             if order:
