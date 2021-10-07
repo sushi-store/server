@@ -222,7 +222,12 @@ EMAIL_HOST_USER = 'sushi.store.plt@gmail.com'
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATIC_ROOT_PATH = 'img/'
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "img/ingredients"),
+    os.path.join(BASE_DIR, "img"),
+)
+
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

@@ -1,5 +1,4 @@
 from django.db import models
-from django.conf import settings
 from .slugify import slugify
 
 
@@ -20,8 +19,7 @@ class Ingredient(models.Model):
     name_ukr = models.CharField(max_length=100, null=False)
     name_rus = models.CharField(max_length=100, null=False)
 
-    image = models.ImageField(
-        upload_to=settings.STATIC_ROOT_PATH + 'ingredients/')
+    image = models.ImageField(upload_to='staticfiles/ingredients')
 
     def __str__(self) -> str:
         return f'{self.name}'
@@ -32,7 +30,7 @@ class Ingredient(models.Model):
 
 class Sushi(models.Model):
     name = models.CharField(max_length=100, null=False)
-    image = models.ImageField(upload_to=settings.STATIC_ROOT_PATH, null=True)
+    image = models.ImageField(upload_to='staticfiles/ingredients', null=True)
     category = models.ForeignKey(
         Category, on_delete=models.CASCADE, related_name='category')
     ingredients = models.ManyToManyField(
