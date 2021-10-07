@@ -40,7 +40,8 @@ class OrderItemSerializer(serializers.ModelSerializer):
         return instance
 
     def to_representation(self, instance):
-        data = SushiSerializer(instance=instance.sushi).data
+        data = SushiSerializer(instance=instance.sushi, context={
+                               'request': self.context.get('request')}).data
         data['amount'] = instance.amount
         return data
 
