@@ -27,7 +27,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
     def get_image(self, obj):
         request = self.context.get('request')
-        return str(obj.image)
+        return str(obj.image.url)
 
 
 class SushiSerializer(serializers.ModelSerializer):
@@ -61,4 +61,4 @@ class SushiSerializer(serializers.ModelSerializer):
 
     def get_image(self, obj):
         request = self.context.get('request')
-        return str(obj.image)
+        return str(obj.image.url)
