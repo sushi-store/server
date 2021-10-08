@@ -30,6 +30,7 @@ requests = "*"
 waitress = "*"
 psycopg2 = "*"
 whitenoise = "*"
+cloudinary = "*"
 
 [requires]
 python_version = "3.9"
