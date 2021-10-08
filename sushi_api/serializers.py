@@ -27,9 +27,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
     def get_image(self, obj):
         request = self.context.get('request')
-        img_url = request.build_absolute_uri(obj.image.url).replace(
-            '/' + obj.image.name, settings.STATIC_URL + os.path.basename(obj.image.name))
-        return img_url
+        return str(obj.image)
 
 
 class SushiSerializer(serializers.ModelSerializer):
@@ -63,6 +61,4 @@ class SushiSerializer(serializers.ModelSerializer):
 
     def get_image(self, obj):
         request = self.context.get('request')
-        img_url = request.build_absolute_uri(obj.image.url).replace(
-            '/' + obj.image.name, settings.STATIC_URL + os.path.basename(obj.image.name))
-        return img_url
+        return str(obj.image)
