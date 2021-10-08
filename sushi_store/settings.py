@@ -14,6 +14,9 @@ import os
 from pathlib import Path
 from datetime import timedelta
 import environ
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 LOGGING = {
     'version': 1,
@@ -139,6 +142,13 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': 'sushi.db',
+#     }
+# }
+
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
@@ -224,11 +234,12 @@ EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, "img/ingredients"),
-    os.path.join(BASE_DIR, "img"),
-)
-
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+cloudinary.config(
+    cloud_name="sushi-store",
+    api_key=env.str('CLOUDINARY_API_KEY'),
+    api_secret=env.str('CLOUDINARY_API_SECRET')
+)
