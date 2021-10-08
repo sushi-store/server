@@ -59,7 +59,7 @@ FERNET_KEY_PASSWORD = bytes(env.str('FERNET_KEY_PASSWORD'), 'utf-8')
 CLIENT_URL = env.str('CLIENT_URL')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['sushi-store-api.herokuapp.com', '127.0.0.1']
 
