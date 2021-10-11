@@ -153,7 +153,7 @@ class ResetPasswordView(APIView):
             )
             email.send()
         except CustomerUser.DoesNotExist as e:
-            return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": str(e)}, status=status.HTTP_204_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
