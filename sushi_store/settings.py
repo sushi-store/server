@@ -59,7 +59,7 @@ FERNET_KEY_PASSWORD = bytes(env.str('FERNET_KEY_PASSWORD'), 'utf-8')
 CLIENT_URL = env.str('CLIENT_URL')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['sushi-store-api.herokuapp.com', '127.0.0.1']
 
@@ -134,11 +134,11 @@ WSGI_APPLICATION = 'sushi_store.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'd6atsgqhnno7fp',
-        'HOST': 'ec2-34-254-120-2.eu-west-1.compute.amazonaws.com',
+        'NAME': 'd3fb44fdb0titt',
+        'HOST': 'ec2-52-19-96-181.eu-west-1.compute.amazonaws.com',
         'PORT': '5432',
-        'USER': 'thjrajkwkrfkqf',
-        'PASSWORD': 'f0781fc4901395a568fa1989f19561afbcef2d7dcadf529337f2f6ea321ec740'
+        'USER': 'mubyatbepwwpfz',
+        'PASSWORD': 'd717916ff91f7be4bde555feb24be796dd0d0e5fef955012155bf3bdca6901c9'
     }
 }
 
@@ -233,8 +233,6 @@ EMAIL_HOST_USER = 'sushi.store.plt@gmail.com'
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 
 STATIC_URL = '/static/'
-
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
