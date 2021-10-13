@@ -61,8 +61,8 @@ class IngredientsInline(admin.StackedInline):
 class SushiModelForm(forms.ModelForm):
     class Meta:
         model = Sushi
-        fields = ('name', 'category', 'description',
-                  'image', 'quantity', 'price', 'discount')
+        fields = ('name', 'name_ukr', 'category', 'description',
+                  'description_ukr', 'image', 'quantity', 'price', 'discount')
 
 
 class SushiModelAdmin(admin.ModelAdmin):

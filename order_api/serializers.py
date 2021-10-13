@@ -9,21 +9,53 @@ from phonenumber_field.serializerfields import PhoneNumberField
 import logging
 
 
-class ChoiceField(serializers.ChoiceField):
+class DeliveryTypeSerializer(serializers.Field):
+    DELIVERIES_TYPES = {
+        'P': {'en': 'Pickup', 'ukr': 'Самовивіз'},
+        'D': {'en': 'Delivery', 'ukr': 'Доставка'},
+    }
 
     def to_representation(self, obj):
-        if obj == '' and self.allow_blank:
-            return obj
-        return self._choices[obj]
+        logger = logging.getLogger('logger')
+        logger.info(obj)
+        return self.DELIVERIES_TYPES[obj]
 
     def to_internal_value(self, data):
-        if data == '' and self.allow_blank:
-            return ''
+        return {k: v for v, k in self.DELIVERIES_TYPES.items()}[data]
 
-        for key, val in self._choices.items():
-            if val == data:
-                return key
-        self.fail('invalid_choice', input=data)
+
+class PaymentMethodSerializer(serializers.Field):
+
+    PAYMENT_METHODS = {
+        'C': {'en': 'Cash', 'ukr': 'Готівкою'},
+        'D': {'en': 'Card', 'ukr': 'Картою'}
+    }
+
+    def to_representation(self, obj):
+        logger = logging.getLogger('logger')
+        logger.info(obj)
+        return self.PAYMENT_METHODS[obj]
+
+    def to_internal_value(self, data):
+        return {k: v for v, k in self.PAYMENT_METHODS.items()}[data]
+
+
+class StatusSerializer(serializers.Field):
+
+    ORDER_STATUS = {
+        'P': {'en': 'Pending', 'ukr': 'В обробці'},
+        'I': {'en': 'In Process', 'ukr': 'Виконується'},
+        'D': {'en': 'Done', 'ukr': 'Готовий'},
+        'C': {'en': 'Cancelled', 'ukr': 'Скасований'}
+    }
+
+    def to_representation(self, obj):
+        logger = logging.getLogger('logger')
+        logger.info(obj)
+        return self.ORDER_STATUS[obj]
+
+    def to_internal_value(self, data):
+        return {k: v for v, k in self.ORDER_STATUS.items()}[data]
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -52,12 +84,9 @@ class OrderSerializer(serializers.ModelSerializer):
     phoneNumber = PhoneNumberField(source='phone_number')
     dateOfOrder = serializers.DateTimeField(
         source='date_of_order', format="%d-%m-%Y %H:%M:%S", read_only=True)
-    deliveryType = ChoiceField(
-        source='delivery_type', choices=Order.DELIVERIES_TYPES)
-    paymentMethod = ChoiceField(
-        source='payment_method', choices=Order.PAYMENT_METHODS)
-    status = serializers.SerializerMethodField(
-        'get_status', read_only=True)
+    deliveryType = DeliveryTypeSerializer(source='delivery_type')
+    paymentMethod = PaymentMethodSerializer(source='payment_method')
+    status = StatusSerializer(read_only=True)
     address = AddressSerializer(source='order_address')
     order = OrderItemSerializer(many=True)
     price = serializers.SerializerMethodField(read_only=True)
@@ -65,17 +94,19 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ['id', 'userId', 'uuid', 'customerName',
-                  'email', 'phoneNumber', 'deliveryType', 'paymentMethod', 'status', 'address', 'order', 'price', 'amount', 'dateOfOrder']
+                  'email', 'phoneNumber', 'deliveryType', 'paymentMethod',  'address', 'order', 'price', 'amount', 'status', 'dateOfOrder']
 
     def create(self, validated_data):
+        logger = logging.getLogger('logger')
         try:
             order_items = validated_data.pop('order')
         except KeyError as error:
             raise NotAcceptable(error)
         try:
             address = validated_data.pop('order_address')
-            if not (validated_data.get('delivery_type') == 'D' and address['street_name'] and address['house_number']) and not validated_data.get('delivery_type') == 'P':
-                raise NotAcceptable('Deliverty type should have address.')
+            logger.info(validated_data)
+            # if not (validated_data.get('delivery_type') == 'D' and address['street_name'] and address['house_number']) and not validated_data.get('delivery_type') == 'P':
+            # raise NotAcceptable('Deliverty type should have address.')
         except KeyError as error:
             raise NotAcceptable(error)
         instance = self.Meta.model(**validated_data)
@@ -91,6 +122,3 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def get_amount(self, obj):
         return obj.amount
-
-    def get_status(self, obj):
-        return obj.get_status_display()
