@@ -1,21 +1,9 @@
 ### Sushi store
 
-## Project setup
+## Project description
 
-1. clone repo
-2. pipenv shell
-3. pipenv install
+The complete Backend part of an E-Commence site is dedicated to a sushi store. This example serves as a demonstration of Django + Backend development skills.
 
-## Starting migrations
+This is a properly working site that anyone could open and check out. Be welcome to try it Yourself.
 
-4. `cd server` `python manage.py migrate`
-
-## Project run
-
-5. Run the server:
-   `cd server` `python manage.py runserver`
-
-## ADMIN credentials
-
-6. To enter django administration follow the link:
-   http://127.0.0.1:8000/admin and login with `admin@admin.com`:`admin`
+And don’t hesitate to reach out to me for discussing Your project ideas.
